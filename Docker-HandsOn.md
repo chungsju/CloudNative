@@ -127,11 +127,6 @@ docker network create --driver bridge mybridge
 # 네트워크 조회
 docker network ls
 docker inspect mybridge
-# 신규 네트워크를 사용하는 컨테이너 실행
-docker run --net mybridge --name centos6 -it -d centos
-docker inspect centos6 | grep NetworkMode #윈도우의 경우 grep 대신 find 명령어
-# 컨테이너 정지 없이 삭제
-docker rm -f centos6
 #
 ```
 
