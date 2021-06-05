@@ -694,6 +694,8 @@ kubectl get hpa web-deploy -o wide
 
 #### 9.1.1 nodes app 생성 (실습용 Docker Image 내용 : chungju/nodeapp에서 내려받을수 있음)
 
+app.js 파일 생성
+
 ```{javascript}
 const http = require('http');
 const os = require('os');
@@ -703,7 +705,7 @@ console.log("Kubia server starting...");
 var handler = function(request, response) {
   console.log("Received request from " + request.connection.remoteAddress);
   response.writeHead(200);
-  response.end("You've hit " + os.hostname() + "\n");
+  response.end("V1 : You've hit " + os.hostname() + "\n");
 };
 
 var www = http.createServer(handler);
@@ -723,7 +725,7 @@ ENTRYPOINT ["node", "app.js"]
 
 
 
-#### 9.1.2 pod 생성
+#### 9.1.2 Deployment 생성
 
 ```{yaml}
 apiVersion: apps/v1
@@ -755,6 +757,7 @@ kind: Service
 metadata:
   name: nodeapp-service
 spec:
+  type: ClusterIP
   ports:
   - port: 80
     targetPort: 8080
@@ -768,48 +771,21 @@ spec:
 kubectl get  po,deploy,svc
 
 NAME                                      READY   STATUS    RESTARTS   AGE
-pod/nodeapp-deployment-55688d9d4b-8pzsk   1/1     Running   0          2m45s
-pod/nodeapp-deployment-55688d9d4b-pslvb   1/1     Running   0          2m46s
-pod/nodeapp-deployment-55688d9d4b-whbk8   1/1     Running   0          2m46s
+pod/nodeapp-deploy-55688d9d4b-8pzsk   1/1     Running   0          2m45s
+pod/nodeapp-deploy-55688d9d4b-pslvb   1/1     Running   0          2m46s
+pod/nodeapp-deploy-55688d9d4b-whbk8   1/1     Running   0          2m46s
 
 NAME                                 READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/nodeapp-deployment   3/3     3            3           2m46s
+deployment.apps/nodeapp-deploy   3/3     3            3           2m46s
 
 NAME                      TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)        AGE
 nodeapp-service   ClusterIP      10.101.249.42    <none>           80/TCP         78s
 ```
 
-#### 9.1.5 서비스 확인
-
-- local VirtualBox
-
-```{bash}
-curl http://10.101.249.42  #여러번 수행 하기
-
-You've hit nodeapp-deployment-55688d9d4b-8pzsk
-```
-
-- GCP Cloud
-
-먼저 Pod 를 조회 합니다.
-
-```{bash}
-kubectl get po, svc
-
-NAME                              READY   STATUS    RESTARTS   AGE
-nodeapp-deploy-6dc7c5dd68-lh26q   1/1     Running   0          116m
-nodeapp-deploy-6dc7c5dd68-r78cj   1/1     Running   0          116m
-nodeapp-deploy-6dc7c5dd68-wcm7d   1/1     Running   0          116m
-
-NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-kubernetes         ClusterIP   10.116.0.1      <none>        443/TCP        32h
-nodeapp-nodeport   NodePort    10.116.11.242   <none>        80:30123/TCP   121m
-```
-
 조회된 Pod 중 하나에  exec 옵션을 사용해 sh 로 접속 합니다.
 
 ```{bash}
-kubectl exec nodeapp-deploy-6dc7c5dd68-lh26q -- sh
+kubectl exec -it nodeapp-deploy-55688d9d4b-8pzsk -- /bin/sh
 ```
 
 curl 을 설치 하고 Cluster IP 로 접속합니다.
@@ -817,31 +793,23 @@ curl 을 설치 하고 Cluster IP 로 접속합니다.
 ```{bash}
 apt-get install curl
 
-curl http://10.116.11.242
-
+clusterIP로 여러번 호출
+curl http://10.116.11.242 
+서비스 이름으로 여러번 호출
+curl http://nodeapp-service
 ```
 
-
-
-#### 9.1.6 원격 Pod에서 curl 명령 수행하기
-
-```{bash}
-kubectl exec nodeapp-deployment-55688d9d4b-8pzsk -- curl -s http://10.101.249.42
-
-You've hit nodeapp-deployment-55688d9d4b-whbk8
-```
-
-> .더블 대시는 kubectl 명령의의 종료를 가르킴
-
-#### 9.1.7 서비스 삭제
+#### 9.1.5 서비스 삭제
 
 ```{bash}
 kubectl delete svc nodeapp-service
 ```
 
+
+
 ### 9.2 NodePort
 
-#### 9.2.1 yaml 을 이용한 NodePort 생성 (GCP 에서 수행 하기)clear
+#### 9.2.1 yaml 을 이용한 NodePort 생성
 
 ```{yaml}
 apiVersion: v1
@@ -878,24 +846,10 @@ service/nodeapp-nodeport   NodePort    10.108.30.68   <none>        80:30123/TCP
 
 #### 9.2.3 NodePort 를 통한 서비스 접속 확인(여러번 수행)
 
-- Vmware VM
+노드의 External 퍼블릭 IP얻기
 
 ```{bash}
-$ curl http://localhost:30123
-You've hit nodeapp-deployment-55688d9d4b-pslvb
-
-$ curl http://localhost:30123
-You've hit nodeapp-deployment-55688d9d4b-whbk8
-
-$ curl http://localhost:30123
-You've hit nodeapp-deployment-55688d9d4b-pslvb
-
-```
-
-- GCP Cloud
-
-```{bash}
-kubectl get no -o wide # 결과에서 External-IP 를 참조
+kubectl get node -o wide # 결과에서 External-IP 를 참조
 
 NAME                                      STATUS   ROLES    AGE   VERSION             INTERNAL-IP   EXTERNAL-IP     OS-IMAGE                             KERNEL-VERSION   CONTAINER-RUNTIME
 gke-istiok8s-default-pool-36a6222b-33vv   Ready    <none>   32h   v1.18.12-gke.1210   10.146.0.21   35.221.70.145   Container-Optimized OS from Google   5.4.49+          docker://19.3.9
@@ -914,78 +868,17 @@ $ curl http://35.221.70.145:30123
 You've hit nodeapp-deploy-6dc7c5dd68-r78cj
 ```
 
-
-
 #### 9.2.4 NodePort 삭제
 
 ```{bash}
 kubectl delete svc nodeapp-nodeport
 ```
 
+
+
 ### 9.3 LoadBalancer (GCP 에서 수행)
 
-#### 9.3.1 yaml 파일로 deployment 생성
-
-```{bash}
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nodeapp-deployment
-  labels:
-    app: nodeapp
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: nodeapp-pod
-  template:
-    metadata:
-      labels:
-        app: nodeapp-pod
-    spec:
-      containers:
-      - name: nodeapp-container
-        image: chungsju/nodeapp
-        ports:
-        - containerPort: 8080
-```
-
-#### 9.3.2 서비스 확인
-
-```{bash}
-$ kubectl get po,rs,deploy
-
-NAME                                      READY   STATUS    RESTARTS   AGE
-pod/nodeapp-deployment-7d58f5d487-7hphx   1/1     Running   0          20m
-pod/nodeapp-deployment-7d58f5d487-d74rp   1/1     Running   0          20m
-pod/nodeapp-deployment-7d58f5d487-r8hq8   1/1     Running   0          20m
-NAME                                                  DESIRED   CURRENT   READY   AGE
-replicaset.extensions/nodeapp-deployment-7d58f5d487   3         3         3       20m
-NAME                                       READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.extensions/nodeapp-deployment   3/3     3            3           20m
-```
-
-```{bash}
-kubectl get po -o wide
-
-NAME                                  READY   STATUS    RESTARTS   AGE   IP           NODE                                  NOMINATED NODE   READINESS GATES
-nodeapp-deployment-7d58f5d487-7hphx   1/1     Running   0          21m   10.32.2.10   gke-gke1-default-pool-ad44d907-cq8j
-nodeapp-deployment-7d58f5d487-d74rp   1/1     Running   0          21m   10.32.2.12   gke-gke1-default-pool-ad44d907-cq8j
-nodeapp-deployment-7d58f5d487-r8hq8   1/1     Running   0          21m   10.32.2.11   gke-gke1-default-pool-ad44d907-cq8j
-```
-
-#### 9.3.2 nodeapp 접속 해보기
-
-```{bash}
-$ kubectl exec nodeapp-deployment-7d58f5d487-7hphx -- curl -s http://10.32.2.10:8080
-또는
-$ kubectl exec -it nodeapp-deployment-7d58f5d487-7hphx bash
-
-$ curl http://10.32.2.10:8080
-You've hit nodeapp-deployment-7d58f5d487-7hphx
-```
-
-#### 9.3.3 yaml 파일을 이용해 LoadBalancer 생성
+#### 9.3.1 LoadBalancer 생성
 
 ```{yaml}
 apiVersion: v1
@@ -1001,7 +894,7 @@ spec:
     app: nodeapp-pod
 ```
 
-#### 9.3.5 LoadBalancer 생성 확인
+#### 9.3.2 LoadBalancer 생성 확인
 
 ```{bash}
 kubectl get svc
@@ -1021,12 +914,10 @@ kubernetes   ClusterIP      10.36.0.1      <none>           443/TCP        7d21h
 nodeapp-lb   LoadBalancer   10.36.14.234   35.221.179.171   80:31237/TCP   45s
 ```
 
-#### 9.3.6 서비스 확인
+#### 9.3.3 서비스 확인
 
 ```{bash}
 curl http://35.221.179.171
 
 You've hit nodeapp-deployment-7d58f5d487-r8hq8
 ```
-
-Ended
