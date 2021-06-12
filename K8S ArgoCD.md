@@ -89,3 +89,14 @@ image: gcr.io/heptio-images/ks-guestbook-demo:0.1 으로 수정
 - 배포하고자 하는 helm value 파일 선택
 
 ![image-20210612053301506](./img/image-20210612053301506.png)
+
+### 17.9 <연습문제> wordpress helm chart를 Argo CD를 통해 배포하기
+
+- helm chart 오프라인 다운받기
+```{bash}
+helm fetch bitnami/wordpress
+```
+
+- 압축풀기
+- Git에 올리기
+- Argo CD에 연동하기
