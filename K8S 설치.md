@@ -1,7 +1,7 @@
 ---
 sort: 1
 ---
-# BWCE 사전 준비사항
+# Kubernetes Cluster 구성
 
 [toc]
 
