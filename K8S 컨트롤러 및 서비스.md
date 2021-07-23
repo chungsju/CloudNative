@@ -162,7 +162,7 @@ spec:
       name: goapp-pod
     spec:
       containers:
-      - image: nginx:1.10 # 이부분을 변경 합닏다.(기존 : chungsju/goapp)
+      - image: nginx:1.10 # 이부분을 변경 합니다.(기존 : chungsju/goapp)
         imagePullPolicy: Always
         name: goapp-container
         ports:
@@ -231,14 +231,11 @@ goapp-rc-x6q4d   1/1     Running   0          3h7m    10.36.0.1   worker02.acorn
 접속 해보기
 
 ```{bash}
-# chungsju/goapp
-curl http://10.32.0.2:8080
-hostname: goapp-rc-qkrpw
+# 기존 pod의 이미지 확인
+kubectl get  pod goapp-rc-x6q4d -o jsonpath="{..image}"
 
-# chungsju/goapp-v3
-curl http://10.32.0.3:8080
-hostname: goapp-rc-bf2xk
-version: goapp-v2
+# 새로 생성된 pod의 이미지 확인
+kubectl get  pod goapp-rc-bf2xk -o jsonpath="{..image}"
 ```
 
 ### 3.10 Pod 스케일링
@@ -280,7 +277,7 @@ spec:
       name: goapp-pod
     spec:
       containers:
-      - image: chungsju/goapp-v2
+      - image: nginx:1.10
         imagePullPolicy: Always
         name: goapp-container
         ports:
@@ -519,7 +516,7 @@ kubectl rollout history deployment/nginx-deployment
 ```{bash}
 kubectl edit deploy goapp-deployment
 
-kubectl scale deploy nginx-deployment
+kubectl scale deploy nginx-deployment --replicas=4
 goapp-deployment-5857594fbb-2hhnv   1/1     Running   0          32m
 goapp-deployment-5857594fbb-6s9lx   1/1     Running   0          6s
 goapp-deployment-5857594fbb-7nqsg   1/1     Running   0          32m
@@ -685,6 +682,9 @@ CPU 사용률 50%에 따른 HPA 설정
 ```{bash}
 kubectl autoscale deployment web-deploy --cpu-percent=50 --min=1 --max=8
 
+kubectl get hpa web-deploy -o wide
+
+#조금 후에, 다시 
 kubectl get hpa web-deploy -o wide
 ```
 
