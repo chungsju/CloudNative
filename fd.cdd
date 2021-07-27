@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<cluster xmlns="http://tibco.com/businessevents/configuration/6.1">
+    <revision>
+        <version>26</version>
+        <author>TIBCO Software Inc.</author>
+        <date>2020/10/07 21:05:05</date>
+        <comment/>
+    </revision>
+    <name>fd</name>
+    <message-encoding>UTF-8</message-encoding>
+    <provider/>
+    <object-management>
+        <memory-manager/>
+        <db-concepts>
+            <db-uris/>
+            <check-interval>60</check-interval>
+            <inactivity-timeout>0</inactivity-timeout>
+            <initial-size>5</initial-size>
+            <max-size>5</max-size>
+            <min-size>5</min-size>
+            <property-check-interval>900</property-check-interval>
+            <retry-count>-1</retry-count>
+            <wait-timeout>1</wait-timeout>
+        </db-concepts>
+    </object-management>
+    <rulesets>
+        <rules id="all-rules">
+            <uri>/</uri>
+        </rules>
+    </rulesets>
+    <function-groups>
+        <functions id="all-functions">
+            <uri>/</uri>
+        </functions>
+    </function-groups>
+    <destination-groups>
+        <destinations id="Http">
+            <destination id="Alloperations">
+                <pre-processor>/RuleFunctions/PreProcessor</pre-processor>
+                <queue-size>0</queue-size>
+                <thread-count/>
+                <threading-model>caller</threading-model>
+                <thread-affinity-rule-function/>
+                <uri>/Channels/HTTP/AllOps</uri>
+            </destination>
+        </destinations>
+    </destination-groups>
+    <process-groups/>
+    <log-configs>
+        <log-config id="logConfig">
+            <enabled>true</enabled>
+            <roles>*:info</roles>
+            <files>
+                <enabled>true</enabled>
+                <dir>logs</dir>
+                <name/>
+                <max-number>10</max-number>
+                <max-size>5000000</max-size>
+                <append>true</append>
+            </files>
+            <terminal>
+                <enabled/>
+                <sys-out-redirect/>
+                <sys-err-redirect/>
+                <encoding/>
+            </terminal>
+            <line-layout>
+                <enabled>false</enabled>
+                <class/>
+                <arg/>
+            </line-layout>
+        </log-config>
+    </log-configs>
+    <agent-classes>
+        <inference-agent-class id="inference-class">
+            <rules>
+                <ref>all-rules</ref>
+            </rules>
+            <destinations>
+                <ref>Http</ref>
+            </destinations>
+            <startup>
+                <uri>/RuleFunctions/InitializeScorecard</uri>
+            </startup>
+            <shutdown/>
+            <local-cache>
+                <eviction>
+                    <max-size/>
+                    <max-time/>
+                </eviction>
+            </local-cache>
+            <shared-queue>
+                <size>1024</size>
+                <workers>10</workers>
+            </shared-queue>
+            <load>
+                <max-active/>
+            </load>
+            <concurrent-rtc>false</concurrent-rtc>
+            <check-for-duplicates>false</check-for-duplicates>
+            <businessworks>
+                <uri/>
+            </businessworks>
+            <property-group/>
+        </inference-agent-class>
+    </agent-classes>
+    <processing-units>
+        <processing-unit id="default">
+            <agents>
+                <agent>
+                    <ref>inference-class</ref>
+                    <key/>
+                    <priority/>
+                </agent>
+            </agents>
+            <logs>logConfig</logs>
+            <hot-deploy>false</hot-deploy>
+            <cache-storage-enabled>false</cache-storage-enabled>
+            <db-concepts>false</db-concepts>
+            <property-group>
+                <property-group comment="" name="com.sun.management.jmxremote">
+                    <property name="com.sun.management.jmxremote" value="true"/>
+                    <property name="com.sun.management.jmxremote.ssl" value="true"/>
+                    <property name="com.sun.management.jmxremote.port" value="5560"/>
+                    <property name="com.sun.management.jmxremote.authenticate" value="false"/>
+                </property-group>
+            </property-group>
+        </processing-unit>
+    </processing-units>
+    <load-balancer-configs>
+        <pair-configs/>
+        <adhoc-configs/>
+    </load-balancer-configs>
+    <property-group>
+        <property-group comment="" name="auth">
+            <property name="be.mm.auth.type" value="file"/>
+            <property name="be.mm.auth.file.location" value="/Users/jeongseungjae/tibco/BE611/be/6.1/mm/config/users.pwd"/>
+            <property name="java.security.auth.login.config" value="/Users/jeongseungjae/tibco/BE611/be/6.1/mm/config/jaas-config.config"/>
+        </property-group>
+    </property-group>
+</cluster>
