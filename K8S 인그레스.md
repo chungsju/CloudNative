@@ -127,22 +127,18 @@ spec:
           servicePort: 80
   - http:
       paths:
-      - path: /goapp
-        backend:
-          serviceName: goapp-svc
-          servicePort: 80          
-  - http:
-      paths:
       - path: /
         backend:
           serviceName: nginx-svc
-          servicePort: 80                    
-  - http:
-      paths:
+          servicePort: 80   
+      - path: /goapp
+        backend:
+          serviceName: goapp-svc
+          servicePort: 80
       - path: /nginx
         backend:
           serviceName: nginx-svc
-          servicePort: 80            
+          servicePort: 80          
 ```
 
 ### 12.5 Ingress 조회
