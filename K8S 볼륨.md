@@ -8,12 +8,10 @@
 
 #### 10.1.1 Docker 이미지 만들기
 
-아래와 같이 폴더를 만들고 ./fortune/docimg 폴더로 이동합니다.
+아래와 같이 폴더를 만들고 ./fortune_emptyDir 폴더로 이동합니다.
 
 ```{bash}
-$ mkdir -p ./fortune/docimg
-$ mkdir -p ./fortune/kubetmp
-
+$ mkdir ./fortune_emptyDir
 ```
 
 아래와 같이 docker 이미지를 작성하기 위해 bash 로 Application을 작성 합니다.
@@ -60,7 +58,6 @@ $ docker push chungsju/fortune
 fortune APP을 적용하기 위해 Deployment 를 작성 합니다.
 
 ```{bash}
-cd ../ktmp/
 vi fortune-deploy.yaml
 ```
 
@@ -131,8 +128,6 @@ spec:
     - port: 80
       targetPort: 80
   type: LoadBalancer
-  externalIPs:
-  - 192.168.56.108
 ```
 
 #### 10.1.4 Deployment 및 Loadbalancer 생성
@@ -145,7 +140,11 @@ $ kubectl apply -f ./fortune-lb.yaml
 #### 10.1.5. 서비스 확인
 
 ```{bash}
-curl http://192.168.56.108
+$ kubectl get service fortune-lb
+NAME         TYPE           CLUSTER-IP     EXTERNAL-IP    PORT(S)        AGE
+fortune-lb   LoadBalancer   10.92.12.153   34.64.155.68   80:30373/TCP   57s
+
+$curl http://34.64.155.68
 ```
 
 ### 10.2 Git EmptyDir
@@ -157,7 +156,8 @@ Github 계정 생성 (혹은 테스트로 https://github.com/chungsju/k8s-web.gi
 #### 10.2.2 Deployment 용 yaml 파일 작성
 
 ```{bash}
-$ cd ./gitvolume/kubetmp
+$ mkdir ./gitvolume
+$ cd ./gitvolume
 $ vi gitvolume-deploy.yaml
 ```
 
@@ -167,16 +167,16 @@ kind: Deployment
 metadata:
   name: gitvolume-deployment
   labels:
-    app: nginx
+    app: gitvolume
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: nginx
+      app: gitvolume
   template:
     metadata:
       labels:
-        app: nginx
+        app: gitvolume
     spec:
       containers:
       - image: nginx:alpine
@@ -192,9 +192,8 @@ spec:
       - name: html
         gitRepo:
           repository: https://github.com/chungsju/k8s-web.git
-          revision: master
+          revision: main
           directory: .
-
 ```
 
 #### 10.2.3 Deployment 생성
@@ -202,6 +201,23 @@ spec:
 ```{bash}
 $ kubectl apply -f ./gitvolume-deploy.yaml
 ```
+
+#### 10.2.4 Pod 서비스 접속
+
+```{bash}
+$ kubectl get pods -l app=gitvolume
+NAME                                    READY   STATUS    RESTARTS   AGE
+gitvolume-deployment-7fbf7b46c5-5vb2n   1/1     Running   0          5m51s
+gitvolume-deployment-7fbf7b46c5-8p4nc   1/1     Running   0          5m51s
+gitvolume-deployment-7fbf7b46c5-mnkpj   1/1     Running   0          5m51s
+
+
+$ kubectl port-forward gitvolume-deployment-7fbf7b46c5-5vb2n 8080:80
+Forwarding from 127.0.0.1:8080 -> 80
+Forwarding from [::1]:8080 -> 80
+```
+> port-forward를 통해 특정 Pod에 포트포워딩 하여 접속합니다.
+> 웹브라우저 localhost:8080 으로 접속하여 보기
 
 ### 10.3 GCE Persisteent DISK 사용하기
 
@@ -211,14 +227,16 @@ $ kubectl apply -f ./gitvolume-deploy.yaml
 
 ```{bash}
 $ gcloud container clusters list
+NAME       LOCATION           MASTER_VERSION   MASTER_IP     MACHINE_TYPE  NODE_VERSION     NUM_NODES  STATUS
+myk8stest  asia-northeast3-a  1.19.9-gke.1900  34.64.81.177  e2-medium     1.19.9-gke.1900  3          RUNNING
 ```
 
 - Disk 생성
 
 ```{bash}
-$ gcloud compute disks create --size=10GiB --zone asia-northeast3-c  mongodb
+$ gcloud compute disks create --size=10GiB --zone asia-northeast3-a  mongodb
 # 삭제
-# gcloud compute disks delete mongodb --zone asia-northeast3-c
+# gcloud compute disks delete mongodb --zone asia-northeast3-a
 ```
 
 #### 10.3.2 Pod 생성을 위한 yaml 파일 작성
@@ -483,10 +501,11 @@ VolumeBindingMode:     WaitForFirstConsumer
 ```{bash}
 gcloud compute disk-types list | grep asia-northeast3
 
-local-ssd    asia-northeast3-c          375GB-375GB
-pd-balanced  asia-northeast3-c          10GB-65536GB
-pd-ssd       asia-northeast3-c          10GB-65536GB
-pd-standard  asia-northeast3-c          10GB-65536GB
+local-ssd    asia-northeast3-a          375GB-375GB
+pd-balanced  asia-northeast3-a          10GB-65536GB
+pd-extreme   asia-northeast3-a          500GB-65536GB
+pd-ssd       asia-northeast3-a          10GB-65536GB
+pd-standard  asia-northeast3-a          10GB-65536GB
 ```
 
 - Stroage Class 생성 (파일명 : sc.yaml)
@@ -499,11 +518,11 @@ metadata:
 provisioner: kubernetes.io/gce-pd
 parameters:
   type: pd-ssd
-  zone: asia-northeast3-c  #클러스터를 만든 지역으로 설정 해야함
+  zone: asia-northeast3-a  #클러스터를 만든 지역으로 설정 해야함
 ```
 
 ```{bash}
-$ kubectl apply -f ./gce-sclass.yaml
+$ kubectl apply -f ./sc.yaml
 ```
 
 #### 10.5.2 Storage Class 이용한 PVC 생성
@@ -514,7 +533,7 @@ $ kubectl apply -f ./gce-sclass.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-   name: mongodb-pvc
+   name: mongodb-pvc-sc
 spec:
   storageClassName: fast
   resources:
@@ -541,7 +560,7 @@ $ kubectl get pvc mongdb-pvc
 - pv 확인
 
 ```{bash}
-$ kubectl get pv
+$ kubectl get pv #Storage Class에 의해 자동 생성된 PV확인
 ```
 
 #### 10.5.4 PVC 를 이용한 POD 생성
@@ -645,7 +664,7 @@ provisioner: kubernetes.io/gce-pd
 reclaimPolicy: Retain
 parameters:
   type: pd-ssd
-  zone: asia-northeast1-c
+  zone: asia-northeast3-a
 ```
 
 ### 11.3 서비스 및 Pod 생성
@@ -710,6 +729,10 @@ kubectl apply -f nodejs-sfs.yaml
 ```
 
 ```{bash}
+kubectl get pvc   
+
+kubectl get pv
+
 kubectl get svc
 
 NAME                     TYPE           CLUSTER-IP     EXTERNAL-IP    PORT(S)        AGE
@@ -739,13 +762,22 @@ curl -X POST -d "hi, my name is chungsju-4" 34.85.38.158
 
 ### 11.5 노드 삭제 및 데이터 보존 확인
 
-- 노드 삭제 및 자동 재생성
+- 노드 삭제 
 
 ```{bash}
-kubectl delete pod nodejs-sfs-0
+kubectl scale statefulset nodejs-sfs --replicas=1
 ```
 
-노드를 삭제 한뒤 노드가 재생성 될때 까지 기다립니다.
+```{bash}
+kubectl get pods #Pod가 삭제된 것을 확인
+kubectl get pvc  #pvc 존재 여부 확인 
+kubectl get pv
+```
+
+- 노드 재 확장
+```{bash}
+kubectl scale statefulset nodejs-sfs --replicas=2
+```
 
 - 데이터 보존 확인
 

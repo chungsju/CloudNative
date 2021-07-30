@@ -44,7 +44,7 @@ chmod 755 fortuneloop.sh
 > - CMD command 파라메터1 파라매터2 → **쉘 명령어 형태**
 
 ```{bash}
-$ vi dockerfile
+$ vi Dockerfile
 ```
 
 ```{dockerfile}

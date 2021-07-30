@@ -916,7 +916,7 @@ nodeapp-lb   LoadBalancer   10.36.14.234   35.221.179.171   80:31237/TCP   45s
 
 #### 9.3.3 서비스 확인
 
-```{bash}
+```ㅌ{bash}
 curl http://35.221.179.171
 
 You've hit nodeapp-deployment-7d58f5d487-r8hq8

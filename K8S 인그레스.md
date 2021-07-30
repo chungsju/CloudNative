@@ -74,9 +74,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name:  nginx-lb
+  name:  nginx-svc
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
   - port: 80
     targetPort: 80
@@ -87,9 +87,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name:  goapp-lb
+  name:  goapp-svc
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
   - port: 80
     targetPort: 8080
@@ -116,15 +116,33 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: nginx-lb
+          serviceName: nginx-svc
           servicePort: 80
   - host: goapp.acorn.com
     http:
       paths:
       - path: /
         backend:
-          serviceName: goapp-lb
+          serviceName: goapp-svc
           servicePort: 80
+  - http:
+      paths:
+      - path: /goapp
+        backend:
+          serviceName: goapp-svc
+          servicePort: 80          
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: nginx-svc
+          servicePort: 80                    
+  - http:
+      paths:
+      - path: /nginx
+        backend:
+          serviceName: nginx-svc
+          servicePort: 80            
 ```
 
 ### 12.5 Ingress 조회
@@ -158,6 +176,12 @@ sudo vi /etc/hosts
 ### 12.7 서비스 확인
 
 ```{bash}
+$ crul http://35.227.227.127/
+
+$ crul http://35.227.227.127/nginx  #동작 여부 확인, 안된다면 왜 안되는지?
+
+$ crul http://35.227.227.127/goapp
+
 $ curl http://goapp.acorn.com
 hostname: goapp-deployment-d7564689f-6rrzw
 
