@@ -347,7 +347,7 @@ spec:
   - image: nginx:1.7.9
     name: web-server
     volumeMounts:
-    - name: ls
+    - name: config
       mountPath: /etc/nginx/conf.d
       readOnly: true
     ports:
