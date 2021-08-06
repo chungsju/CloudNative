@@ -76,9 +76,9 @@ version: 1.6.3
 - mysql helm 차트 설치 및 Deployment
 
 ```{bash}
-helm install bitnami/mysql --generate-name
+helm install myhelm-test-mysql bitnami/mysql   #myhelm-test-mysql으로 릴리스 이름을 명시하거나 --generate-name 옵션으로 릴리스 이름 자동 생성 가능
 
-AME: mysql-1588321002
+NAME: myhelm-test-mysql
 LAST DEPLOYED: Fri May  1 08:16:55 2020
 NAMESPACE: default
 STATUS: deployed

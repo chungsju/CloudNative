@@ -2,9 +2,9 @@
 
 [toc]
 
-##  18. Istio
+##  19. Istio
 
-### 18.1 Istio 설치하기
+### 19.1 Istio 설치하기
 
 - istio 릴리즈 다운받기 (https://github.com/istio/istio/releases/tag/1.10.1)
 - bin 폴더 Path 환경변수 추가 
@@ -30,7 +30,9 @@ namespace/default labeled
 kubectl apply -f samples/addons
  ```
 
-### 18.2 샘플 어플리케이션 설치
+### 19.2 샘플 어플리케이션 설치
+
+> 각 작업시 해당 yaml파일을 열어서 구조를 파악하기 바랍니다.
 
 - 서비스와 디플로이먼트 설치
 ```{bash}
@@ -44,7 +46,7 @@ kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
 
 - DestinationRule 설치
 ```{bash}
-kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml
+kubectl apply -f x
 ```
 
 - Istio Gateway 외부 주소 확인
@@ -55,7 +57,7 @@ kubectl get service istio-ingressgateway -n istio-system
 - 웹브라우저에서 http://gatewayIP/productpage 접속 확인
 
 
-### 18.3 대쉬보드 접근
+### 19.3 대쉬보드 접근
 
 - 부하발생
 특정 Pod에 접속(kubectl exec -it pod이름 /bin/bash) 하여 아래 명령어 실행
@@ -78,7 +80,7 @@ istioctl dashboard grafana
 istioctl dashboard jaeger
 ```
 
-### 18.3 가중치 기반 라우팅 
+### 19.3 가중치 기반 라우팅 
 
 - Review V1과 V3을 각 50:50으로 라우팅
 
@@ -111,7 +113,7 @@ spec:
 istioctl dashboard kiali
 ```
 
-### 18.4 컨텐츠 기반 라우팅
+### 19.4 컨텐츠 기반 라우팅
 
 - head에 end-user 값이 jason이 있는 요청은 reviews v2로 요청
 
@@ -145,7 +147,7 @@ spec:
 리뷰 별이 검정색(v2)으로 나오는것을 확인
 
 
-### 18.5 circuit breaker 테스트
+### 19.5 circuit breaker 테스트
 
 - 샘플 타겟 서비스 생성
 
@@ -196,6 +198,16 @@ spec:
       interval: 1s
       maxEjectionPercent: 100
 ```
+> maxConnection : 1로 하나의 커넥션과 http1MaxPendingRequests :1 로 하나의 동시 요청만 허용
+
+> http1MaxPendingRequests: Queue에서 connection pool 에 연결을 기다리는 최대 request 수 HTTP/1.1 해당, Default 1024
+> http2MaxRequests : 백엔드로 가는 최대 요청 수. HTTP/2 해당, Default 1024
+> maxRequestsPerConnection : connection 당 최대 요쳥 수. 값이 1 이면 keep alive 기능 disable
+
+>consecutiveErrors : hosts가 connection pool 에서 제외되는 오류 수
+>interval : 제외 분석 간격. format: 1h/1m/1s/1ms. MUST BE >=1ms. (Default 10s)
+>baseEjectionTime : circuit break 시간 (Default 30s.)
+>maxEjectionPercent : load balancing pool 에서 제외될 수 있는 upstream servie 비율 (Defaults to 10%.)
 
 - 샘플 타겟을 호출할 Client Pod 생성
 ```
@@ -203,8 +215,11 @@ kubectl apply -f samples/httpbin/sample-client/fortio-deploy.yaml
 ```
 
 - Client Pod에서 동시 접속 부하 발생
+> -c 숫자 컨터런트 옵션을 변경해 가며 과부화로 인한 circuit breaker가 발동하여 httpbin에 더이상의 리퀘스르틀 보내지 않는 것을 확인합니다.
+
 ```
 kubectl exec "$FORTIO_POD" -c fortio -- /usr/bin/fortio load -c 2 -qps 0 -n 30 -loglevel Warning http://httpbin:8000/get
+
 20:33:46 I logger.go:97> Log level is now 3 Warning (was 2 Info)
 Fortio 1.3.1 running at 0 queries per second, 6->6 procs, for 20 calls: http://httpbin:8000/get
 Starting at max qps with 2 thread(s) [gomax 6] for exactly 20 calls (10 per thread + 0)
