@@ -201,12 +201,17 @@ spec:
 > maxConnection : 1로 하나의 커넥션과 http1MaxPendingRequests :1 로 하나의 동시 요청만 허용
 
 > http1MaxPendingRequests: Queue에서 connection pool 에 연결을 기다리는 최대 request 수 HTTP/1.1 해당, Default 1024
+>
 > http2MaxRequests : 백엔드로 가는 최대 요청 수. HTTP/2 해당, Default 1024
+>
 > maxRequestsPerConnection : connection 당 최대 요쳥 수. 값이 1 이면 keep alive 기능 disable
 
 >consecutiveErrors : hosts가 connection pool 에서 제외되는 오류 수
+>
 >interval : 제외 분석 간격. format: 1h/1m/1s/1ms. MUST BE >=1ms. (Default 10s)
+>
 >baseEjectionTime : circuit break 시간 (Default 30s.)
+>
 >maxEjectionPercent : load balancing pool 에서 제외될 수 있는 upstream servie 비율 (Defaults to 10%.)
 
 - 샘플 타겟을 호출할 Client Pod 생성
