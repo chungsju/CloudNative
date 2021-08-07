@@ -46,7 +46,7 @@ kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
 
 - DestinationRule 설치
 ```{bash}
-kubectl apply -f x
+kubectl apply -f samples/bookinfo/networking/destination-rule-reviews.yaml
 ```
 
 - Istio Gateway 외부 주소 확인
