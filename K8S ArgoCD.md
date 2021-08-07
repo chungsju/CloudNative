@@ -98,6 +98,7 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 ```
 > 위의 모든 과정은 Heml Chart를 통해서도 설치 가능합니다.
 > helm repo add argo https://argoproj.github.io/argo-helm
+>
 > helm install my-argo-cd argo/argo-cd --set server.service.type=LoadBalancer
 
 - 로드벨런서 주소 얻은 후 브라우저로 로그인
