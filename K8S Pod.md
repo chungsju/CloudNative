@@ -143,7 +143,7 @@ weave-net-7j7mn                          2/2     Running   0          19d
 
   ```{bash}
   # Pod 실행
-  $ kubectl run goapp-project --generator=run-pod/v1 --image=chungsju/goapp --port=8080
+  $ kubectl run goapp-project --image=chungsju/goapp --port=8080
   ```
 
 - 컨테이너 확인
@@ -298,10 +298,10 @@ spec:
       protocol: TCP
 ```
 
-> ports 정보를 yaml 파일에 기록 하지 않으면 아래 명령어로 향후에 포트를 할당해도 됩니다.
+> 아래 port-forward를 통해 localhost의 port를 특정 pod의 pod로 연결할수 있습니다. (브라우저에서 http://localhost:8083 접속)
 >
 > ```
-> kubectl port-forward goapp-pod 8080:8080
+> kubectl port-forward goapp-pod 8083:8080
 > ```
 
 ### 2.4 YAML 파일을 이용한 POD 생성 및 확인
