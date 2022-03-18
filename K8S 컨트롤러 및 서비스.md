@@ -127,7 +127,7 @@ goapp-rc-szv2r   1/1     Running   0          6m52s   app=goapp-exit
 
 ### 3.8 Pod Template 변경 해보기
 
-아래와 같이 Pod Template의 spec ➢ spec ➢ containers ➢ image 항목을 nginx:1.10 로 변경 합니다.
+아래와 같이 Pod Template의 spec ➢ spec ➢ containers ➢ image 항목을 nginx:1.20 로 변경 합니다.
 
 ```{bash}
 kubectl edit rc nginx
@@ -162,7 +162,7 @@ spec:
       name: goapp-pod
     spec:
       containers:
-      - image: nginx:1.10 # 이부분을 변경 합니다.(기존 : chungsju/goapp)
+      - image: nginx:1.20 # 이부분을 변경 합니다.(기존 : chungsju/goapp)
         imagePullPolicy: Always
         name: goapp-container
         ports:
@@ -277,7 +277,7 @@ spec:
       name: goapp-pod
     spec:
       containers:
-      - image: nginx:1.10
+      - image: nginx:1.20
         imagePullPolicy: Always
         name: goapp-container
         ports:
@@ -403,7 +403,7 @@ frontend-rv9bl   1/1     Running   0          107s   env=prod,priority=high,tier
 
 ### [[Exercise]]
 
-1. Nginx:1.18 Pod 3개로 구성된 Replication Controller를 작성 하세요
+1. Nginx:1.21.1 Pod 3개로 구성된 Replication Controller를 작성 하세요
 2. Replication Controller 만 삭제 하세요(Pod 는 유지)   (--cascade=false 옵션 사용)
 3. 남겨진 Nginx Pod를 관리하는 ReplicaSet 을 작성하고 replica 4개로 구성 하시요
 4. Nginx Pod 를 6개로 Scale Out 하세요
@@ -435,7 +435,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:1.7.9
+        image: nginx:1.20.1
         ports:
         - containerPort: 80
 
@@ -466,13 +466,13 @@ deployment.apps/nginx-deployment   3/3     3            3           30s
 - 기본 방식
 
 ```{yaml}
-kubectl --record deployment.apps/nginx-deployment set image deployment.v1.apps/nginx-deployment nginx=nginx:1.9.1
+kubectl --record deployment.apps/nginx-deployment set image deployment.v1.apps/nginx-deployment nginx=nginx:1.20.2
 ```
 
 - 단축 방식
 
 ```{bash}
-kubectl set image deployment/nginx-deployment nginx=nginx:1.9.1 --record
+kubectl set image deployment/nginx-deployment nginx=nginx:1.20.2 --record
 ```
 
 - yaml 파일 수정(.spec.template.spec.containers[0].image 변경)
@@ -484,11 +484,11 @@ kubectl edit deployment.v1.apps/nginx-deployment
 - 롤아웃
 
 ```shell
-kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.10 --record
+kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.20.3 --record
 ```
 
 ```shell
-kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.11 --record
+kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.20.4 --record
 ```
 
 - 롤아웃 히스토리 확인
