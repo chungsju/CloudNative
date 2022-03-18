@@ -484,11 +484,11 @@ kubectl edit deployment.v1.apps/nginx-deployment
 - 롤아웃
 
 ```shell
-kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.20.3 --record
+kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.21.1 --record
 ```
 
 ```shell
-kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.20.4 --record
+kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.21.5 --record
 ```
 
 - 롤아웃 히스토리 확인
