@@ -100,45 +100,55 @@ spec:
 ### 12.4 Ingress 생성
 
 ```{yaml}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: nginx-goapp-ingress
 spec:
-  tls:
-  - hosts:
-    - nginx.acorn.com
-    - goapp.acorn.com
-    secretName: acorn-secret
   rules:
   - host: nginx.acorn.com
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: nginx-svc
-          servicePort: 80
+          service:
+            name: nginx-svc
+            port: 
+              number: 80
   - host: goapp.acorn.com
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: goapp-svc
-          servicePort: 80
+          service:
+            name: goapp-svc
+            port: 
+              number: 80
   - http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: nginx-svc
-          servicePort: 80   
+          service:
+            name: nginx-svc
+            port: 
+              number: 80   
       - path: /goapp
+        pathType: Prefix
         backend:
-          serviceName: goapp-svc
-          servicePort: 80
+          service:
+            name: goapp-svc
+            port: 
+              number: 80
       - path: /nginx
+        pathType: Prefix
         backend:
-          serviceName: nginx-svc
-          servicePort: 80          
+          service:
+            name: nginx-svc
+            port: 
+              number: 80        
 ```
 
 ### 12.5 Ingress 조회
@@ -197,28 +207,3 @@ $ curl http://nginx.acorn.com
 <body>
 
 ```
-
-### 12.8 HTTPS 서비스 (TLS OffLoad)
-
-- 인증서 생성 및 인증서 secret 등록
-
-```{bash}
-openssl genrsa -out server.key 2048
-
-openssl req -new -x509 -key server.key -out server.cert -days 360 -subj /CN=nginx.acorn.com
-
-kubectl create  secret tls acorn-secret --cert=server.cert --key=server.key
-```
-
-- 테스트
-
-```{bash}
-$ curl -k https://nginx.acorn.com
-
-$ curl -k https://goapp.acorn.com
-```
-
-
-
-
-
